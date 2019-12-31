@@ -1,16 +1,41 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import './App.css';
 
-const App: React.FC = () => {
-  const [board, setBoard] = useState([
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-  ])
+type State = number[][]
+
+const initialState: State = [
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+]
+
+type Action =
+  | {
+    type: 'toggle',
+    payload: {
+      coordinates: { x: number, y: number }
+    }
+  }
+
+function reducer(state: State, action: Action) {
+  const { type, payload } = action
+  switch (type) {
+    case 'toggle':
+      return state.map((y, iy) => (y.map((x, ix) => payload.coordinates.y === iy && payload.coordinates.x === ix ? Number(!x) : x)))
+    default:
+      throw new Error();
+  }
+}
+
+
+const Board: React.FC = () => {
+  const [state, dispatch] = useReducer(reducer, initialState as State);
   return (
-    <div className="App">
-      {board
+    <div
+      style={{ margin: 10 }}
+    >
+      {state
         .map((y, iy) => (<div
           key={`y${iy}`}
           style={{
@@ -29,19 +54,22 @@ const App: React.FC = () => {
                 width: 30,
                 border: '1px solid black',
               }}
-              onClick={() => setBoard(Object.assign([...board], {
-                [iy]: Object.assign([...board[iy]], {
-                  [ix]: Number(!y[ix])
-                })
-              }))}
+              onClick={() => dispatch({ type: 'toggle', payload: { coordinates: { x: ix, y: iy } } })}
             >
               {`${value}`}
             </div>)}
         </div>
-        )
-        )
+        ))
       }
+    </div>
+  )
+}
 
+const App: React.FC = () => {
+  return (
+    <div className="App">
+      <Board />
+      <Board />
     </div >
   );
 }
